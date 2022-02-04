@@ -1,0 +1,136 @@
+#include "Arduino.h"
+#include "Mindwave.h"
+int enA = 6;
+int in1 = 3;
+int in2 = 2;
+// Motor B connections
+int enB = 7;
+int in3 = 5;
+int in4 = 8;
+int led = 13 ;
+const int trigPin = 11;
+const int echoPin = 10;
+float duration, distance;
+int sp;
+int sp1;
+int x =0;
+Mindwave mindwave;
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(enA, OUTPUT);
+  pinMode(enB, OUTPUT);
+  pinMode(in3, OUTPUT); 
+  pinMode(in4, OUTPUT);
+  pinMode(led, OUTPUT);
+  
+  Serial.begin(115200);
+  Serial.println("Start");
+  Serial.begin(MINDWAVE_BAUDRATE);
+  delay(200); 
+
+}
+
+void onMindwaveBlink() {
+  
+ 
+ if (mindwave.blink() == 2) {   // edit the number blinking 
+    Serial.println();
+    Serial.println("Double Blink!");
+    Serial.println(); 
+     digitalWrite(in1, HIGH);
+//    digitalWrite(in2, LOW);  // if you want to stop all motor 
+  //  digitalWrite(in3, LOW);
+ //   digitalWrite(in4, LOW);
+      delay(500);
+    
+    
+   
+  }
+  
+ // if (mindwave.blink() == 4) {   edit the number blinking  
+ //   Serial.println();
+  //  Serial.println("4 Blink!");
+  //  Serial.println();
+    
+     
+    
+  }
+}
+
+void onMindwaveData() {
+  Serial.print("Quality: ");
+  Serial.println(mindwave.quality());
+  Serial.print("Attention: ");
+  Serial.println(mindwave.attention());
+  Serial.print("Meditation: ");
+  Serial.println(mindwave.meditation());  
+  Serial.println();
+  sp = mindwave.attention();
+  digitalWrite(trigPin, LOW);    //ultrasonic sensor  code
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration*.0343)/2;
+  sp1=sp * 2 ;   
+  analogWrite(enA,sp1);  // motor speed same as attention x 2
+  analogWrite(enB,sp1);
+  if( sp > 1) 
+    digitalWrite(led,HIGH);
+    else 
+      digitalWrite(led,LOW);
+    
+  if( (distance > 20)  && (sp > 5 )){    // only move when the attention more then 5 and distance from the ultrasonic more than 20 cm 
+      analogWrite(enA,sp1);
+      analogWrite(enB,sp1);
+        digitalWrite(in1, HIGH);
+     // digitalWrite(in2, LOW);    //  I'm only using move forward so no need for in 2 and in 4 
+    //  digitalWrite(in3, LOW);
+        digitalWrite(in3, HIGH);
+  }   else  
+        digitalWrite(in1, LOW);
+        
+        
+        
+        
+      //  digitalWrite(in4, LOW);
+      if( (distance < 20) )                       
+           digitalWrite(in3, LOW);
+     //   digitalWrite(in4, LOW);
+  }
+      
+      
+      
+
+    
+  
+      
+      
+    
+
+
+void book() {
+  
+      
+  
+ 
+}
+
+
+
+
+
+void loop() {
+  mindwave.update(Serial, onMindwaveData, onMindwaveBlink); // This with blink detection. onMindwaveBlink is an optional parameter.
+
+
+  
+  //mindwave.update(Serial2, onMindwaveData);    // This works without blink detection 
+}
+
+
